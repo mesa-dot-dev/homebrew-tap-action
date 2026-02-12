@@ -5,7 +5,7 @@
 
 <div align="center">
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/mesa-dot-dev/homebrew-tap-action/test.yml?branch=main&label=tests)](https://github.com/mesa-dot-dev/homebrew-tap-action/actions/workflows/test.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/mesa-dot-dev/homebrew-tap-action/ci.yml?branch=main&label=CI)](https://github.com/mesa-dot-dev/homebrew-tap-action/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/mesa-dot-dev/homebrew-tap-action)](https://github.com/mesa-dot-dev/homebrew-tap-action/blob/main/LICENSE)
 
 </div>
