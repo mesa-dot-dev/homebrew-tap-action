@@ -12,33 +12,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Babashka
+        id: cache-bb
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/bin/bb
+          key: bb-${{ runner.os }}-${{ runner.arch }}
+
       - name: Install Babashka
-        run: sudo bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
+        if: steps.cache-bb.outputs.cache-hit != 'true'
+        run: curl -s https://raw.githubusercontent.com/babashka/babashka/master/install | bash -s -- --dir "${{ runner.temp }}/bin"
 
       - name: Run tests
-        run: bb test
+        run: PATH="${{ runner.temp }}/bin:$PATH" bb test
 
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
     env:
+      CLJ_KONDO_VERSION: '2026.01.19'
       CLJSTYLE_VERSION: '0.17.642'
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup clj-kondo
-        uses: DeLaGuardo/setup-clj-kondo@v1
+      - name: Cache clj-kondo
+        id: cache-kondo
+        uses: actions/cache@v4
         with:
-          version: '2026.01.19'
+          path: ${{ runner.temp }}/bin/clj-kondo
+          key: clj-kondo-${{ runner.os }}-${{ runner.arch }}-${{ env.CLJ_KONDO_VERSION }}
+
+      - name: Install clj-kondo
+        if: steps.cache-kondo.outputs.cache-hit != 'true'
+        run: |
+          curl -sLO "https://github.com/clj-kondo/clj-kondo/releases/download/v${CLJ_KONDO_VERSION}/clj-kondo-${CLJ_KONDO_VERSION}-linux-amd64.zip"
+          unzip -q "clj-kondo-${CLJ_KONDO_VERSION}-linux-amd64.zip"
+          mkdir -p "${{ runner.temp }}/bin"
+          mv clj-kondo "${{ runner.temp }}/bin/"
+
+      - name: Cache cljstyle
+        id: cache-cljstyle
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/bin/cljstyle
+          key: cljstyle-${{ runner.os }}-${{ runner.arch }}-${{ env.CLJSTYLE_VERSION }}
 
       - name: Install cljstyle
+        if: steps.cache-cljstyle.outputs.cache-hit != 'true'
         run: |
           curl -sLO "https://github.com/greglook/cljstyle/releases/download/${CLJSTYLE_VERSION}/cljstyle_${CLJSTYLE_VERSION}_linux_amd64.zip"
           unzip -q "cljstyle_${CLJSTYLE_VERSION}_linux_amd64.zip"
-          sudo mv cljstyle /usr/local/bin/
+          mkdir -p "${{ runner.temp }}/bin"
+          mv cljstyle "${{ runner.temp }}/bin/"
 
       - name: Lint
-        run: clj-kondo --lint src test
+        run: PATH="${{ runner.temp }}/bin:$PATH" clj-kondo --lint src test
 
       - name: Check formatting
-        run: cljstyle check src test
+        run: PATH="${{ runner.temp }}/bin:$PATH" cljstyle check src test
