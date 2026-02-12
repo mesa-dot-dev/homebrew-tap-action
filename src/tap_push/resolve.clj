@@ -1,7 +1,9 @@
 (ns tap-push.resolve
-  (:require [babashka.fs :as fs]
-            [babashka.process :as p]
-            [clojure.string :as str]))
+  (:require
+    [babashka.fs :as fs]
+    [babashka.process :as p]
+    [clojure.string :as str]))
+
 
 (defn resolve-name
   "Resolves project name from explicit input or GITHUB_REPOSITORY.
@@ -12,6 +14,7 @@
     (when (not (str/blank? github-repository))
       (second (str/split github-repository #"/")))))
 
+
 (defn resolve-version
   "Resolves version from explicit input or git ref name (strips v prefix).
    Returns the version string, or nil if unresolvable."
@@ -20,6 +23,7 @@
     (not (str/blank? input-version)) input-version
     (not (str/blank? github-ref-name)) (str/replace-first github-ref-name #"^v" "")
     :else nil))
+
 
 (defn class-s
   "Computes the Homebrew formula class name from a formula name.
@@ -31,6 +35,7 @@
       (str/replace #"[-_.\s](\w)" (fn [[_ c]] (str/upper-case c)))
       (str/replace "+" "x")
       (str/replace #"@(\d)" "AT$1")))
+
 
 (defn resolve-url
   "Resolves artifact URL from explicit input or GitHub release auto-discovery.
@@ -54,6 +59,7 @@
             {:ok (str "https://github.com/" github-repository "/releases/download/" tag "/" asset)}
             {:error (str "Could not auto-discover URL: no macOS asset found in release '" tag "'. Provide the 'url' input.")}))))))
 
+
 (defn resolve-sha256
   "Resolves SHA256 from explicit input or by downloading and computing.
    Returns {:ok sha256} or {:error msg}."
@@ -73,6 +79,7 @@
                 sha (-> (:out sha-result) str/trim (str/split #"\s+") first)]
             (fs/delete-if-exists tmpfile)
             {:ok sha}))))))
+
 
 (defn resolve-license
   "Resolves license SPDX ID via GitHub API.

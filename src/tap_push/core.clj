@@ -1,16 +1,19 @@
 (ns tap-push.core
-  (:require [babashka.fs :as fs]
-            [clojure.string :as str]
-            [tap-push.gh :as gh]
-            [tap-push.git :as git]
-            [tap-push.resolve :as resolve]
-            [tap-push.template :as template]))
+  (:require
+    [babashka.fs :as fs]
+    [clojure.string :as str]
+    [tap-push.gh :as gh]
+    [tap-push.git :as git]
+    [tap-push.resolve :as resolve]
+    [tap-push.template :as template]))
+
 
 (defn- env
   "Gets environment variable value, returns nil if blank."
   [k]
   (let [v (System/getenv k)]
     (when-not (str/blank? v) v)))
+
 
 (defn- require!
   "Returns value if truthy, otherwise prints error and exits."
@@ -20,6 +23,7 @@
     (System/exit 1))
   value)
 
+
 (defn- require-ok!
   "Extracts :ok value from result map, or prints :error and exits."
   [{:keys [ok error]}]
@@ -28,7 +32,9 @@
     (System/exit 1))
   ok)
 
-(defn -main [& _args]
+
+(defn -main
+  [& _args]
   ;; Mask the tap token
   (when-let [token (env "INPUT_TAP_TOKEN")]
     (gh/add-mask token))
@@ -129,12 +135,12 @@
 
       ;; Commit and push
       (git/push-to-tap {:tap-dir tap-dir
-                         :tap (env "INPUT_TAP")
-                         :branch (env "INPUT_TAP_BRANCH")
-                         :committer-name (env "INPUT_COMMITTER_NAME")
-                         :committer-email (env "INPUT_COMMITTER_EMAIL")
-                         :commit-message (env "INPUT_COMMIT_MESSAGE")
-                         :version version})
+                        :tap (env "INPUT_TAP")
+                        :branch (env "INPUT_TAP_BRANCH")
+                        :committer-name (env "INPUT_COMMITTER_NAME")
+                        :committer-email (env "INPUT_COMMITTER_EMAIL")
+                        :commit-message (env "INPUT_COMMIT_MESSAGE")
+                        :version version})
 
       ;; Cleanup
       (fs/delete-tree tap-dir))))

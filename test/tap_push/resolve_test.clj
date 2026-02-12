@@ -1,6 +1,8 @@
 (ns tap-push.resolve-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [tap-push.resolve :as resolve]))
+  (:require
+    [clojure.test :refer [deftest is testing]]
+    [tap-push.resolve :as resolve]))
+
 
 (deftest resolve-name-test
   (testing "uses explicit input-name"
@@ -17,6 +19,7 @@
     (is (= "git-fs"
            (resolve/resolve-name {:input-name ""
                                   :github-repository "mesa-dot-dev/git-fs"})))))
+
 
 (deftest resolve-version-test
   (testing "uses explicit input-version"
@@ -37,6 +40,7 @@
   (testing "returns nil when no version available"
     (is (nil? (resolve/resolve-version {:input-version nil
                                         :github-ref-name nil})))))
+
 
 (deftest class-s-test
   (testing "simple hyphenated name"

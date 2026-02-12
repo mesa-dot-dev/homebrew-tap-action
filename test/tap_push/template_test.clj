@@ -1,8 +1,10 @@
 (ns tap-push.template-test
-  (:require [babashka.fs :as fs]
-            [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
-            [tap-push.template :as template]))
+  (:require
+    [babashka.fs :as fs]
+    [clojure.string :as str]
+    [clojure.test :refer [deftest is testing]]
+    [tap-push.template :as template]))
+
 
 (deftest detect-required-vars-test
   (testing "detects ${VAR} syntax"
@@ -26,6 +28,7 @@
     (is (= #{}
            (template/detect-required-vars "echo $VERSIONED")))))
 
+
 (deftest validate-vars-test
   (testing "returns nil when all required vars have values"
     (is (nil? (template/validate-vars
@@ -43,6 +46,7 @@
            (set (template/validate-vars
                   #{"VERSION" "URL" "SHA256"}
                   {"VERSION" "1.0.0" "URL" "" "SHA256" ""}))))))
+
 
 (deftest substitute-vars-test
   (testing "replaces ${VAR} with values"
@@ -62,6 +66,7 @@
            (template/substitute-vars
              "version \"${VERSION}\" ${OTHER}"
              {"VERSION" "1.0"})))))
+
 
 (deftest generate-formula-test
   (testing "generates formula file from template"

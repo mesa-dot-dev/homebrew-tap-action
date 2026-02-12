@@ -1,9 +1,12 @@
 (ns tap-push.template
-  (:require [babashka.fs :as fs]
-            [clojure.string :as str]))
+  (:require
+    [babashka.fs :as fs]
+    [clojure.string :as str]))
+
 
 (def known-vars
   ["VERSION" "NAME" "URL" "SHA256" "LICENSE" "FORMULA_CLASS_NAME"])
+
 
 (defn detect-required-vars
   "Scans template content for known variable references (${VAR} or $VAR syntax).
@@ -14,6 +17,7 @@
                   (re-find (re-pattern (str "\\$\\{" var-name "\\}|\\$" var-name "(?![A-Za-z0-9_])"))
                            template-content)))
         known-vars))
+
 
 (defn validate-vars
   "Validates that all required variables have non-empty values.
@@ -26,6 +30,7 @@
     (when (seq missing)
       missing)))
 
+
 (defn substitute-vars
   "Replaces ${VAR} placeholders in template with values from vars map.
    Only replaces the ${VAR} form (with braces)."
@@ -34,6 +39,7 @@
             (str/replace s (str "${" k "}") (str v)))
           template
           vars))
+
 
 (defn generate-formula
   "Generates a formula file by substituting vars in a template.

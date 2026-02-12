@@ -1,8 +1,10 @@
 (ns tap-push.git
-  (:require [babashka.fs :as fs]
-            [babashka.process :as p]
-            [clojure.string :as str]
-            [tap-push.gh :as gh]))
+  (:require
+    [babashka.fs :as fs]
+    [babashka.process :as p]
+    [clojure.string :as str]
+    [tap-push.gh :as gh]))
+
 
 (defn clone-tap
   "Clones the tap repository to a temporary directory.
@@ -10,9 +12,10 @@
   [{:keys [tap token branch]}]
   (let [dir (str (fs/create-temp-dir {:prefix "tap-push-"}))]
     (p/sh "git" "clone" "--depth" "1" "--branch" (or branch "main")
-           (str "https://x-access-token:" token "@github.com/" tap ".git")
-           dir)
+          (str "https://x-access-token:" token "@github.com/" tap ".git")
+          dir)
     dir))
+
 
 (defn push-to-tap
   "Commits and pushes changes in the tap directory.
