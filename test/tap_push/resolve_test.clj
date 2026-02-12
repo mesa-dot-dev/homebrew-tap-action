@@ -63,3 +63,15 @@
 
   (testing "at-version shorthand"
     (is (= "OpensslAT3" (resolve/class-s "openssl@3")))))
+
+
+(deftest resolve-repo-url-test
+  (testing "builds URL from github-repository"
+    (is (= "https://github.com/mesa-dot-dev/git-fs"
+           (resolve/resolve-repo-url {:github-repository "mesa-dot-dev/git-fs"}))))
+
+  (testing "returns nil when github-repository is blank"
+    (is (nil? (resolve/resolve-repo-url {:github-repository nil}))))
+
+  (testing "returns nil when github-repository is empty string"
+    (is (nil? (resolve/resolve-repo-url {:github-repository ""})))))

@@ -37,6 +37,14 @@
       (str/replace #"@(\d)" "AT$1")))
 
 
+(defn resolve-repo-url
+  "Resolves repository URL from GITHUB_REPOSITORY.
+   Returns the URL string, or nil if unresolvable."
+  [{:keys [github-repository]}]
+  (when-not (str/blank? github-repository)
+    (str "https://github.com/" github-repository)))
+
+
 (defn resolve-url
   "Resolves artifact URL from explicit input or GitHub release auto-discovery.
    Returns {:ok url} or {:error msg}."
