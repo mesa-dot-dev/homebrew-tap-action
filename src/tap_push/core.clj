@@ -44,13 +44,11 @@
                          {:input-name (env "INPUT_NAME")
                           :github-repository (env "GITHUB_REPOSITORY")})
                        "Could not resolve name. Provide the 'name' input.")
-        _ (gh/notice (str "Resolved NAME: " name))
 
         version (require! (resolve/resolve-version
                             {:input-version (env "INPUT_VERSION")
                              :github-ref-name (env "GITHUB_REF_NAME")})
                           "Could not resolve version. Provide 'version' input or run from a tag.")
-        _ (gh/notice (str "Resolved VERSION: " version))
 
         ;; Read and analyze template
         workspace (require! (env "GITHUB_WORKSPACE") "GITHUB_WORKSPACE is not set.")
@@ -62,7 +60,6 @@
 
         template-content (slurp template-path)
         required-vars (template/detect-required-vars template-content)
-        _ (gh/notice (str "Template requires: " (str/join " " (sort required-vars))))
 
         ;; Resolve URL and SHA256 unconditionally — SHA256 is always
         ;; exposed as an action output, and computing it requires a URL.
@@ -75,7 +72,6 @@
             (gh/error (:error url-result))
             (System/exit 1))
         url (:ok url-result)
-        _ (when url (gh/notice (str "Resolved URL: " url)))
 
         sha256-result (resolve/resolve-sha256
                         {:input-sha256 (env "INPUT_SHA256")
@@ -84,31 +80,22 @@
             (gh/error (:error sha256-result))
             (System/exit 1))
         sha256 (:ok sha256-result)
-        _ (when sha256 (gh/notice (str "Resolved SHA256: " sha256)))
 
         license (when (required-vars "LICENSE")
-                  (let [l (require-ok! (resolve/resolve-license
-                                         {:github-repository (env "GITHUB_REPOSITORY")}))]
-                    (gh/notice (str "Resolved LICENSE: " l))
-                    l))
+                  (require-ok! (resolve/resolve-license
+                                 {:github-repository (env "GITHUB_REPOSITORY")})))
 
         latest-class (when (required-vars "FORMULA_CLASS_NAME")
-                       (let [c (resolve/class-s name)]
-                         (gh/notice (str "Latest FORMULA_CLASS_NAME: " c))
-                         c))
+                       (resolve/class-s name))
 
         versioned-class (when (and (required-vars "FORMULA_CLASS_NAME")
                                    (env "INPUT_VERSIONED_PATH"))
-                          (let [c (resolve/class-s (str name "@" version))]
-                            (gh/notice (str "Versioned FORMULA_CLASS_NAME: " c))
-                            c))
+                          (resolve/class-s (str name "@" version)))
 
         repo-url (when (required-vars "REPO_URL")
-                   (let [r (require! (resolve/resolve-repo-url
-                                       {:github-repository (env "GITHUB_REPOSITORY")})
-                                     "Could not resolve REPO_URL. GITHUB_REPOSITORY is not set.")]
-                     (gh/notice (str "Resolved REPO_URL: " r))
-                     r))
+                   (require! (resolve/resolve-repo-url
+                               {:github-repository (env "GITHUB_REPOSITORY")})
+                             "Could not resolve REPO_URL. GITHUB_REPOSITORY is not set."))
 
         ;; Build vars map for latest formula
         vars {"VERSION" version
@@ -136,16 +123,14 @@
 
       ;; Generate latest formula
       (let [latest-path (str tap-dir "/" (env "INPUT_LATEST_PATH"))]
-        (template/generate-formula template-path latest-path vars)
-        (gh/notice (str "Generated latest formula: " (env "INPUT_LATEST_PATH"))))
+        (template/generate-formula template-path latest-path vars))
 
       ;; Generate versioned formula (optional)
       (when-let [versioned-path-template (env "INPUT_VERSIONED_PATH")]
         (let [resolved-path (str/replace versioned-path-template "${VERSION}" version)
               versioned-full (str tap-dir "/" resolved-path)
               versioned-vars (assoc vars "FORMULA_CLASS_NAME" (or versioned-class latest-class ""))]
-          (template/generate-formula template-path versioned-full versioned-vars)
-          (gh/notice (str "Generated versioned formula: " resolved-path))))
+          (template/generate-formula template-path versioned-full versioned-vars)))
 
       ;; Commit and push
       (git/push-to-tap {:tap-dir tap-dir
