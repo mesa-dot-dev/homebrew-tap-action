@@ -64,21 +64,27 @@
         required-vars (template/detect-required-vars template-content)
         _ (gh/notice (str "Template requires: " (str/join " " (sort required-vars))))
 
-        ;; Resolve conditional inputs
-        url (when (required-vars "URL")
-              (let [u (require-ok! (resolve/resolve-url
-                                     {:input-url (env "INPUT_URL")
-                                      :github-repository (env "GITHUB_REPOSITORY")
-                                      :version version}))]
-                (gh/notice (str "Resolved URL: " u))
-                u))
+        ;; Resolve URL and SHA256 unconditionally — SHA256 is always
+        ;; exposed as an action output, and computing it requires a URL.
+        ;; Only fail if the template requires them and resolution fails.
+        url-result (resolve/resolve-url
+                     {:input-url (env "INPUT_URL")
+                      :github-repository (env "GITHUB_REPOSITORY")
+                      :version version})
+        _ (when (and (required-vars "URL") (:error url-result))
+            (gh/error (:error url-result))
+            (System/exit 1))
+        url (:ok url-result)
+        _ (when url (gh/notice (str "Resolved URL: " url)))
 
-        sha256 (when (required-vars "SHA256")
-                 (let [s (require-ok! (resolve/resolve-sha256
-                                        {:input-sha256 (env "INPUT_SHA256")
-                                         :url url}))]
-                   (gh/notice (str "Resolved SHA256: " s))
-                   s))
+        sha256-result (resolve/resolve-sha256
+                        {:input-sha256 (env "INPUT_SHA256")
+                         :url url})
+        _ (when (and (required-vars "SHA256") (:error sha256-result))
+            (gh/error (:error sha256-result))
+            (System/exit 1))
+        sha256 (:ok sha256-result)
+        _ (when sha256 (gh/notice (str "Resolved SHA256: " sha256)))
 
         license (when (required-vars "LICENSE")
                   (let [l (require-ok! (resolve/resolve-license
