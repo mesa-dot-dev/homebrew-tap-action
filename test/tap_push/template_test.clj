@@ -26,7 +26,11 @@
 
   (testing "does not match partial names like $VERSIONED"
     (is (= #{}
-           (template/detect-required-vars "echo $VERSIONED")))))
+           (template/detect-required-vars "echo $VERSIONED"))))
+
+  (testing "detects REPO_URL variable"
+    (is (= #{"REPO_URL" "FORMULA_CLASS_NAME"}
+           (template/detect-required-vars "class ${FORMULA_CLASS_NAME} < Formula\n  homepage \"${REPO_URL}\"\nend")))))
 
 
 (deftest validate-vars-test

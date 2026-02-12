@@ -5,7 +5,7 @@
 
 
 (def known-vars
-  ["VERSION" "NAME" "URL" "SHA256" "LICENSE" "FORMULA_CLASS_NAME"])
+  ["VERSION" "NAME" "URL" "SHA256" "LICENSE" "FORMULA_CLASS_NAME" "REPO_URL"])
 
 
 (defn detect-required-vars
