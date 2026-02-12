@@ -1,0 +1,61 @@
+name: 'Push Homebrew Formula'
+description: 'Generate and push Homebrew formulae to a tap repository from a template'
+
+inputs:
+  name:
+    description: 'Project name (defaults to repository name)'
+    required: false
+  url:
+    description: 'URL to the artifact (auto-discovered from GitHub release if omitted)'
+    required: false
+  sha256:
+    description: 'SHA256 checksum of the artifact (auto-computed from url if omitted)'
+    required: false
+  version:
+    description: 'Version string (defaults to current tag with v prefix stripped)'
+    required: false
+  tap:
+    description: 'Target tap repository, e.g. owner/homebrew-tap'
+    required: true
+  tap-branch:
+    description: 'Branch to push to in the tap repository'
+    required: false
+    default: 'main'
+  versioned-path:
+    description: 'Path for versioned formula in the tap, e.g. Formula/app@${VERSION}.rb'
+    required: false
+  latest-path:
+    description: 'Path for latest formula in the tap, e.g. Formula/app.rb'
+    required: true
+  template:
+    description: 'Path to the formula template file in the calling repository'
+    required: true
+  commit-message:
+    description: 'Commit message (${VERSION} is replaced). Default: Deploy Formula ${VERSION}'
+    required: false
+  tap-token:
+    description: 'PAT with push access to the tap repository'
+    required: true
+  committer-name:
+    description: 'Git committer name'
+    required: false
+    default: 'github-actions[bot]'
+  committer-email:
+    description: 'Git committer email'
+    required: false
+    default: 'github-actions[bot]@users.noreply.github.com'
+
+outputs:
+  version:
+    description: 'The resolved version string'
+    value: ${{ steps.run.outputs.version }}
+  sha256:
+    description: 'The resolved or computed SHA256'
+    value: ${{ steps.run.outputs.sha256 }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Placeholder
+      shell: bash
+      run: echo "TODO"
