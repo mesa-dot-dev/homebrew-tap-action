@@ -98,13 +98,14 @@ Templates use `${VAR}` placeholders. Only variables actually referenced in your 
 | `${SHA256}` | SHA256 checksum of the artifact (explicit input or computed by downloading the URL) |
 | `${LICENSE}` | SPDX license identifier detected from the repository via the GitHub API |
 | `${FORMULA_CLASS_NAME}` | Homebrew formula class name (e.g. `MyApp`, `MyAppAT123`) |
+| `${REPO_URL}` | Repository URL (e.g. `https://github.com/owner/repo`) |
 
 ### Example template
 
 ```ruby
 class ${FORMULA_CLASS_NAME} < Formula
   desc "My application"
-  homepage "https://github.com/owner/my-app"
+  homepage "${REPO_URL}"
   url "${URL}"
   sha256 "${SHA256}"
   license "${LICENSE}"
