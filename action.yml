@@ -31,8 +31,9 @@ inputs:
     description: 'Path to the formula template file in the calling repository'
     required: true
   commit-message:
-    description: 'Commit message (${VERSION} is replaced). Default: Deploy Formula ${VERSION}'
+    description: 'Commit message (${VERSION} is replaced)'
     required: false
+    default: 'Deploy Formula ${VERSION}'
   tap-token:
     description: 'PAT with push access to the tap repository'
     required: true
@@ -56,6 +57,37 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Placeholder
+    - name: Cache Babashka
+      id: cache-bb
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/bin/bb
+        key: bb-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Install Babashka
+      if: steps.cache-bb.outputs.cache-hit != 'true'
       shell: bash
-      run: echo "TODO"
+      run: bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install) --dir "${{ runner.temp }}/bin"
+
+    - name: Push Homebrew formula
+      id: run
+      shell: bash
+      env:
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_URL: ${{ inputs.url }}
+        INPUT_SHA256: ${{ inputs.sha256 }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_TAP: ${{ inputs.tap }}
+        INPUT_TAP_BRANCH: ${{ inputs.tap-branch }}
+        INPUT_VERSIONED_PATH: ${{ inputs.versioned-path }}
+        INPUT_LATEST_PATH: ${{ inputs.latest-path }}
+        INPUT_TEMPLATE: ${{ inputs.template }}
+        INPUT_COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        INPUT_TAP_TOKEN: ${{ inputs.tap-token }}
+        INPUT_COMMITTER_NAME: ${{ inputs.committer-name }}
+        INPUT_COMMITTER_EMAIL: ${{ inputs.committer-email }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        export PATH="${{ runner.temp }}/bin:$PATH"
+        cd "${{ github.action_path }}"
+        bb -m tap-push.core

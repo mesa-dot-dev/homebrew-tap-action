@@ -1,0 +1,30 @@
+name: Lint & Format
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup clj-kondo
+        uses: DeLaGuardo/setup-clj-kondo@master
+        with:
+          version: '2026.01.19'
+
+      - name: Install cljstyle
+        run: |
+          curl -sLO https://github.com/greglook/cljstyle/releases/download/0.17.642/cljstyle_0.17.642_linux_amd64.zip
+          unzip -q cljstyle_0.17.642_linux_amd64.zip
+          sudo mv cljstyle /usr/local/bin/
+
+      - name: Lint
+        run: clj-kondo --lint src test
+
+      - name: Check formatting
+        run: cljstyle check src test

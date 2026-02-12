@@ -1,0 +1,9 @@
+{:files {:ignore #{"target" ".clj-kondo" ".cpcache"}}
+ :rules {:eof-newline {:enabled? true}
+         :whitespace {:enabled? true}
+         :indentation {:enabled? true
+                       :list-indent 2}
+         :blank-lines {:enabled? true
+                       :max-consecutive 2}
+         :comments {:enabled? true}
+         :namespaces {:enabled? true}}}

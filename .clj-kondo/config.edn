@@ -1,0 +1,2 @@
+{:output {:level :warning}
+ :linters {:unsorted-required-namespaces {:level :warning}}}

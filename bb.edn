@@ -1,0 +1,27 @@
+{:paths ["src" "test"]
+ :tasks
+ {test
+  {:doc "Run all tests"
+   :requires ([clojure.test :as t])
+   :task (do
+           (require '[tap-push.resolve-test]
+                    '[tap-push.template-test])
+           (let [{:keys [fail error]}
+                 (t/run-tests 'tap-push.resolve-test
+                              'tap-push.template-test)]
+             (when (pos? (+ fail error))
+               (System/exit 1))))}
+
+  lint
+  {:doc "Lint source files with clj-kondo"
+   :task (let [result (shell {:continue true} "clj-kondo --lint src test")]
+           (System/exit (:exit result)))}
+
+  fmt-check
+  {:doc "Check formatting with cljstyle"
+   :task (let [result (shell {:continue true} "cljstyle check src test")]
+           (System/exit (:exit result)))}
+
+  fmt
+  {:doc "Fix formatting with cljstyle"
+   :task (shell "cljstyle fix src test")}}}
