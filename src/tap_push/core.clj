@@ -97,13 +97,21 @@
                             (gh/notice (str "Versioned FORMULA_CLASS_NAME: " c))
                             c))
 
+        repo-url (when (required-vars "REPO_URL")
+                   (let [r (require! (resolve/resolve-repo-url
+                                       {:github-repository (env "GITHUB_REPOSITORY")})
+                                     "Could not resolve REPO_URL. GITHUB_REPOSITORY is not set.")]
+                     (gh/notice (str "Resolved REPO_URL: " r))
+                     r))
+
         ;; Build vars map for latest formula
         vars {"VERSION" version
               "NAME" name
               "URL" (or url "")
               "SHA256" (or sha256 "")
               "LICENSE" (or license "")
-              "FORMULA_CLASS_NAME" (or latest-class "")}]
+              "FORMULA_CLASS_NAME" (or latest-class "")
+              "REPO_URL" (or repo-url "")}]
 
     ;; Validate all required vars are resolved
     (when-let [missing (template/validate-vars required-vars vars)]
