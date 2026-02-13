@@ -26,15 +26,19 @@
 
 
 (defn class-s
-  "Computes the Homebrew formula class name from a formula name.
-   Matches Homebrew's Formulary.class_s Ruby implementation.
-   Examples: \"git-fs\" => \"GitFs\", \"git-fs@1.2.3\" => \"GitFsAT123\""
+  "Computes the Homebrew formula class name by delegating to brew's
+   Formulary.class_s — the canonical implementation."
   [name]
-  (-> name
-      str/capitalize
-      (str/replace #"[-_.\s](\w)" (fn [[_ c]] (str/upper-case c)))
-      (str/replace "+" "x")
-      (str/replace #"@(\d)" "AT$1")))
+  (when-not (re-matches #"[a-zA-Z0-9_@+.\-]+" name)
+    (throw (ex-info (str "Invalid formula name: " name)
+                    {:name name})))
+  (let [result (p/sh {:continue true :err :string}
+                     "brew" "ruby" "-e"
+                     (str "puts Formulary.class_s(\"" name "\")"))]
+    (when-not (zero? (:exit result))
+      (throw (ex-info (str "brew ruby failed: " (:err result))
+                      {:name name :exit (:exit result)})))
+    (str/trim (:out result))))
 
 
 (defn resolve-repo-url
