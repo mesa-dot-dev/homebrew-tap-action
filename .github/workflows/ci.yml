@@ -23,6 +23,9 @@ jobs:
         if: steps.cache-bb.outputs.cache-hit != 'true'
         run: curl -s https://raw.githubusercontent.com/babashka/babashka/master/install | bash -s -- --dir "${{ runner.temp }}/bin"
 
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
       - name: Run tests
         run: PATH="${{ runner.temp }}/bin:$PATH" bb test
 
