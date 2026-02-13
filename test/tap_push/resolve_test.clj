@@ -62,7 +62,10 @@
     (is (= "Cxx" (resolve/class-s "c++"))))
 
   (testing "at-version shorthand"
-    (is (= "OpensslAT3" (resolve/class-s "openssl@3")))))
+    (is (= "OpensslAT3" (resolve/class-s "openssl@3"))))
+
+  (testing "pre-release version starting with zero"
+    (is (= "GitFsAT012Alpha1" (resolve/class-s "git-fs@0.1.2-alpha.1")))))
 
 
 (deftest resolve-repo-url-test
