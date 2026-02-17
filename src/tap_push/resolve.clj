@@ -112,6 +112,9 @@
    to brew's Version.detect. Returns the version string, or nil if
    Homebrew cannot detect a version."
   [url]
+  (when (re-find #"'" url)
+    (throw (ex-info (str "Invalid URL (contains single quote): " url)
+                    {:url url})))
   (let [result (p/sh {:continue true :err :string}
                      "brew" "ruby" "-e"
                      (str "v = Version.detect('" url "'); puts v unless v.null?"))]
