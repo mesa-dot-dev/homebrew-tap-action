@@ -41,6 +41,15 @@
           vars))
 
 
+(defn strip-version-line
+  "Removes lines containing a bare `version \"...\"` declaration from formula content.
+   Does not strip commented lines."
+  [content]
+  (->> (str/split-lines content)
+       (remove #(re-matches #"\s*version\s+\"[^\"]*\"\s*" %))
+       (str/join "\n")))
+
+
 (defn generate-formula
   "Generates a formula file by substituting vars in a template.
    Creates parent directories if needed."

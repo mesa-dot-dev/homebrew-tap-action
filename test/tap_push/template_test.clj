@@ -94,3 +94,18 @@
         (is (str/includes? result "sha256 \"abc123\""))
         (is (str/includes? result "license \"MIT\"")))
       (fs/delete-tree tmp-dir))))
+
+
+(deftest strip-version-line-test
+  (testing "removes version line with leading whitespace"
+    (is (= "class Foo < Formula\n  url \"https://example.com\"\n  sha256 \"abc\"\nend"
+           (template/strip-version-line
+             "class Foo < Formula\n  url \"https://example.com\"\n  version \"1.2.3\"\n  sha256 \"abc\"\nend"))))
+
+  (testing "preserves content when no version line present"
+    (is (= "class Foo < Formula\nend"
+           (template/strip-version-line "class Foo < Formula\nend"))))
+
+  (testing "does not strip commented version lines"
+    (is (= "# version \"1.0\"\nend"
+           (template/strip-version-line "# version \"1.0\"\nend")))))
