@@ -97,6 +97,19 @@
                                {:github-repository (env "GITHUB_REPOSITORY")})
                              "Could not resolve REPO_URL. GITHUB_REPOSITORY is not set."))
 
+        ;; Version/URL consistency check (only when INPUT_VERSION is explicitly set)
+        strip-version? (if (and (env "INPUT_VERSION") url)
+                         (let [url-version (resolve/detect-url-version url)]
+                           (cond
+                             (nil? url-version) false
+                             (= version url-version) true
+                             :else (do (gh/error (str "Provided version '" version
+                                                      "' does not match version '"
+                                                      url-version
+                                                      "' detected by Homebrew from URL: " url))
+                                       (System/exit 1))))
+                         false)
+
         ;; Build vars map for latest formula
         vars {"VERSION" version
               "NAME" name
@@ -123,14 +136,16 @@
 
       ;; Generate latest formula
       (let [latest-path (str tap-dir "/" (env "INPUT_LATEST_PATH"))]
-        (template/generate-formula template-path latest-path vars))
+        (template/generate-formula template-path latest-path vars
+                                   :strip-version? strip-version?))
 
       ;; Generate versioned formula (optional)
       (when-let [versioned-path-template (env "INPUT_VERSIONED_PATH")]
         (let [resolved-path (str/replace versioned-path-template "${VERSION}" version)
               versioned-full (str tap-dir "/" resolved-path)
               versioned-vars (assoc vars "FORMULA_CLASS_NAME" (or versioned-class latest-class ""))]
-          (template/generate-formula template-path versioned-full versioned-vars)))
+          (template/generate-formula template-path versioned-full versioned-vars
+                                     :strip-version? strip-version?)))
 
       ;; Commit and push
       (git/push-to-tap {:tap-dir tap-dir
