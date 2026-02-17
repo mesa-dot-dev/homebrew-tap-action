@@ -93,6 +93,25 @@
         (is (str/includes? result "version \"1.2.3\""))
         (is (str/includes? result "sha256 \"abc123\""))
         (is (str/includes? result "license \"MIT\"")))
+      (fs/delete-tree tmp-dir)))
+
+  (testing "strips version line when strip-version? is true"
+    (let [tmp-dir (str (fs/create-temp-dir {:prefix "test-strip-"}))
+          template-path (str tmp-dir "/template.rb")
+          output-path (str tmp-dir "/output/Formula/app.rb")
+          vars {"FORMULA_CLASS_NAME" "MyApp"
+                "VERSION" "1.2.3"
+                "SHA256" "abc123"}]
+      (spit template-path
+            (str "class ${FORMULA_CLASS_NAME} < Formula\n"
+                 "  version \"${VERSION}\"\n"
+                 "  sha256 \"${SHA256}\"\n"
+                 "end"))
+      (template/generate-formula template-path output-path vars :strip-version? true)
+      (let [result (slurp output-path)]
+        (is (str/starts-with? result "class MyApp < Formula"))
+        (is (not (str/includes? result "version")))
+        (is (str/includes? result "sha256 \"abc123\"")))
       (fs/delete-tree tmp-dir))))
 
 

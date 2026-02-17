@@ -52,10 +52,12 @@
 
 (defn generate-formula
   "Generates a formula file by substituting vars in a template.
-   Creates parent directories if needed."
-  [template-path output-path vars]
+   Creates parent directories if needed.
+   When strip-version? is true, removes the version line from the output."
+  [template-path output-path vars & {:keys [strip-version?]}]
   (let [template (slurp template-path)
-        result (substitute-vars template vars)
+        result (cond-> (substitute-vars template vars)
+                 strip-version? strip-version-line)
         parent (fs/parent output-path)]
     (when parent
       (fs/create-dirs parent))
