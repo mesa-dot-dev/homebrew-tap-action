@@ -105,3 +105,17 @@
     (if (or (str/blank? license) (= license "null") (= license "NOASSERTION"))
       {:error "Could not detect repository license. Template requires $LICENSE but no SPDX license found."}
       {:ok license})))
+
+
+(defn detect-url-version
+  "Detects the version Homebrew would extract from a URL by delegating
+   to brew's Version.detect. Returns the version string, or nil if
+   Homebrew cannot detect a version."
+  [url]
+  (let [result (p/sh {:continue true :err :string}
+                     "brew" "ruby" "-e"
+                     (str "v = Version.detect('" url "'); puts v unless v.null?"))]
+    (when (zero? (:exit result))
+      (let [out (str/trim (:out result))]
+        (when-not (str/blank? out)
+          out)))))

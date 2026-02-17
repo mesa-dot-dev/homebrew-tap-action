@@ -78,3 +78,19 @@
 
   (testing "returns nil when github-repository is empty string"
     (is (nil? (resolve/resolve-repo-url {:github-repository ""})))))
+
+
+(deftest detect-url-version-test
+  (testing "detects version from GitHub archive URL"
+    (is (= "0.1.3"
+           (resolve/detect-url-version
+             "https://github.com/owner/repo/archive/refs/tags/v0.1.3.tar.gz"))))
+
+  (testing "detects version from GitHub release download URL"
+    (is (= "0.1.3"
+           (resolve/detect-url-version
+             "https://github.com/owner/repo/releases/download/v0.1.3/app-darwin.tar.gz"))))
+
+  (testing "returns nil for URL with no detectable version"
+    (is (nil? (resolve/detect-url-version
+                "https://example.com/latest/app.tar.gz")))))
