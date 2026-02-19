@@ -50,6 +50,14 @@
        (str/join "\n")))
 
 
+(defn- ensure-trailing-newline
+  "Ensures string ends with exactly one newline character."
+  [s]
+  (if (str/ends-with? s "\n")
+    s
+    (str s "\n")))
+
+
 (defn generate-formula
   "Generates a formula file by substituting vars in a template.
    Creates parent directories if needed.
@@ -61,4 +69,4 @@
         parent (fs/parent output-path)]
     (when parent
       (fs/create-dirs parent))
-    (spit output-path result)))
+    (spit output-path (ensure-trailing-newline result))))
