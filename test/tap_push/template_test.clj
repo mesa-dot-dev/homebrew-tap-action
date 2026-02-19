@@ -86,13 +86,14 @@
                  "  version \"${VERSION}\"\n"
                  "  sha256 \"${SHA256}\"\n"
                  "  license \"${LICENSE}\"\n"
-                 "end"))
+                 "end\n"))
       (template/generate-formula template-path output-path vars)
       (let [result (slurp output-path)]
         (is (str/starts-with? result "class MyApp < Formula"))
         (is (str/includes? result "version \"1.2.3\""))
         (is (str/includes? result "sha256 \"abc123\""))
-        (is (str/includes? result "license \"MIT\"")))
+        (is (str/includes? result "license \"MIT\""))
+        (is (str/ends-with? result "\n")))
       (fs/delete-tree tmp-dir)))
 
   (testing "strips version line when strip-version? is true"
@@ -106,12 +107,13 @@
             (str "class ${FORMULA_CLASS_NAME} < Formula\n"
                  "  version \"${VERSION}\"\n"
                  "  sha256 \"${SHA256}\"\n"
-                 "end"))
+                 "end\n"))
       (template/generate-formula template-path output-path vars :strip-version? true)
       (let [result (slurp output-path)]
         (is (str/starts-with? result "class MyApp < Formula"))
         (is (not (str/includes? result "version")))
-        (is (str/includes? result "sha256 \"abc123\"")))
+        (is (str/includes? result "sha256 \"abc123\""))
+        (is (str/ends-with? result "\n")))
       (fs/delete-tree tmp-dir)))
 
   (testing "output file ends with trailing newline"
