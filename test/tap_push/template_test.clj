@@ -112,6 +112,61 @@
         (is (str/starts-with? result "class MyApp < Formula"))
         (is (not (str/includes? result "version")))
         (is (str/includes? result "sha256 \"abc123\"")))
+      (fs/delete-tree tmp-dir)))
+
+  (testing "output file ends with trailing newline"
+    (let [tmp-dir (str (fs/create-temp-dir {:prefix "test-newline-"}))
+          template-path (str tmp-dir "/template.rb")
+          output-path (str tmp-dir "/output/Formula/app.rb")
+          vars {"FORMULA_CLASS_NAME" "MyApp"
+                "VERSION" "1.2.3"
+                "SHA256" "abc123"
+                "LICENSE" "MIT"}]
+      (spit template-path
+            (str "class ${FORMULA_CLASS_NAME} < Formula\n"
+                 "  version \"${VERSION}\"\n"
+                 "  sha256 \"${SHA256}\"\n"
+                 "  license \"${LICENSE}\"\n"
+                 "end\n"))
+      (template/generate-formula template-path output-path vars)
+      (let [result (slurp output-path)]
+        (is (str/ends-with? result "\n") "generated formula must end with trailing newline"))
+      (fs/delete-tree tmp-dir)))
+
+  (testing "output file ends with trailing newline after stripping version"
+    (let [tmp-dir (str (fs/create-temp-dir {:prefix "test-strip-nl-"}))
+          template-path (str tmp-dir "/template.rb")
+          output-path (str tmp-dir "/output/Formula/app.rb")
+          vars {"FORMULA_CLASS_NAME" "MyApp"
+                "VERSION" "1.2.3"
+                "SHA256" "abc123"}]
+      (spit template-path
+            (str "class ${FORMULA_CLASS_NAME} < Formula\n"
+                 "  version \"${VERSION}\"\n"
+                 "  sha256 \"${SHA256}\"\n"
+                 "end\n"))
+      (template/generate-formula template-path output-path vars :strip-version? true)
+      (let [result (slurp output-path)]
+        (is (str/ends-with? result "\n") "generated formula must end with trailing newline after version strip"))
+      (fs/delete-tree tmp-dir)))
+
+  (testing "output file ends with trailing newline even when template lacks one"
+    (let [tmp-dir (str (fs/create-temp-dir {:prefix "test-no-nl-"}))
+          template-path (str tmp-dir "/template.rb")
+          output-path (str tmp-dir "/output/Formula/app.rb")
+          vars {"FORMULA_CLASS_NAME" "MyApp"
+                "VERSION" "1.2.3"
+                "SHA256" "abc123"
+                "LICENSE" "MIT"}]
+      (spit template-path
+            (str "class ${FORMULA_CLASS_NAME} < Formula\n"
+                 "  version \"${VERSION}\"\n"
+                 "  sha256 \"${SHA256}\"\n"
+                 "  license \"${LICENSE}\"\n"
+                 "end"))
+      (template/generate-formula template-path output-path vars)
+      (let [result (slurp output-path)]
+        (is (str/ends-with? result "\n") "generated formula must end with trailing newline even if template lacks one"))
       (fs/delete-tree tmp-dir))))
 
 
