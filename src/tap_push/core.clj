@@ -97,17 +97,13 @@
                                {:github-repository (env "GITHUB_REPOSITORY")})
                              "Could not resolve REPO_URL. GITHUB_REPOSITORY is not set."))
 
-        ;; Version/URL consistency check (only when INPUT_VERSION is explicitly set)
+        ;; When INPUT_VERSION is explicitly set, check if it matches the URL-detected
+        ;; version. If they match, strip the redundant version line. If they differ,
+        ;; keep the explicit version line so it overrides URL detection.
         strip-version? (if (and (env "INPUT_VERSION") url)
                          (let [url-version (resolve/detect-url-version url)]
-                           (cond
-                             (nil? url-version) false
-                             (= version url-version) true
-                             :else (do (gh/error (str "Provided version '" version
-                                                      "' does not match version '"
-                                                      url-version
-                                                      "' detected by Homebrew from URL: " url))
-                                       (System/exit 1))))
+                           (and (some? url-version)
+                                (= version url-version)))
                          false)
 
         ;; Build vars map for latest formula
